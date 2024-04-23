@@ -1,7 +1,6 @@
 # Summative 2 BIO 5023Y
 
 ## ✨ Brief introduction
-This is a solo project assignment for module BIO 5023Y - Data Science for Biologists. This assignment requires data cleaning, exploratory analysis, data visualisation & statistical model building and inference.
 
 *Change this README to represent your project when complete*
 
