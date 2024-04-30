@@ -89,6 +89,14 @@ ggplot(data = probiotic, aes(x = group, y = rcg_abund)) +
               width=0.2)+
   theme(legend.position = "none")
 
+# Histogram with variables
+probiotic %>% 
+  ggplot(aes(x=rcg_abund,
+             fill=gender))+
+  geom_histogram(alpha=0.6,
+                 bins=40)+
+  facet_wrap(~group,
+             ncol=1)
 
 # Data Analysis ----
 summary(probiotic)
@@ -117,6 +125,7 @@ probiotic %>%
   car::qqPlot()
 # Identifies data points 13 and 41 as outliers 
 # No action needed until residuals are analysed 
+
 
 
 
