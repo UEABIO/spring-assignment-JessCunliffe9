@@ -29,28 +29,6 @@ glimpse(probiotic)
 # group	Placebo or LGG (probiotic L. rhamnosus GG)
 # ruminococcus_gnavus_abund	Read count abundance of pathogenic bacteria
 
-
-# Making data set public friendly: wider to remove sample ID, subject duplicates and 1 and 2 rows ----
-#pivotwider
-
-  probiotic_merged_2 <- probiotic %>% 
-  group_by(subject) %>% 
-  pivot_wider(names_from = "time", values_from = ruminococcus_gnavus_abund)%>% 
-  select(-sample) %>% 
-  rename(before_abund = `1`,
-         after_abund = `2`) %>% 
-  pivot_longer(cols = c(before_abund, after_abund), names_to = "Time", values_to = "Measurement") %>%
-  group_by(subject, group, gender, Time) %>%
-  summarise(Measurement = mean(Measurement, na.rm = TRUE)) %>%
-  pivot_wider(names_from = Time, values_from = Measurement) %>% 
-  mutate(difference = after_abund - before_abund)
-
-# Removing the subject column as i feel it is not needed for analysis
-  probiotic_merged_2_blind <-   probiotic_merged_2[, -which(names(probiotic_merged_2) == "subject")]
-  
-  # Having done this i can now easily compare before and after values
-  # I am keeping in gender as i would like to explore the relationship involvement 
-  
 # Data clean and tidy ----
 
 # Cleaning column names 
@@ -80,10 +58,6 @@ probiotic %>%
 # Removing factors not required in analysis 
 probiotic <- probiotic %>% select(-sample)
 
-# Changing values 1 to before and 2 to after and creating column to compare before and after 
-probiotic_mutated <- probiotic %>%
-  mutate(time = ifelse(time == 1, 'Before', 'After'))
-
 
 # Hypothesis ----
 #H1 = there is an reduction in abundance of the pathogenic bacterium Ruminococcus 
@@ -97,8 +71,7 @@ probiotic_mutated <- probiotic %>%
 probiotic %>% 
   ggplot()+
   geom_histogram(aes(x=rcg_abund),
-                 bins=10)
-# identifies that the data distribution is into normally distributed when looking at rcg_abund combing F and M 
+                 bins=20)
 
 # jitter plot of rcg_bund Vs Gender Vs Group
 ggplot(data = probiotic, aes(x = group, y = rcg_abund)) +
@@ -107,6 +80,7 @@ ggplot(data = probiotic, aes(x = group, y = rcg_abund)) +
               alpha = 0.7, 
               show.legend = FALSE)
  
+
 # Boxplot of rcg_bund Vs group Vs gender
 ggplot(data = probiotic, aes(x = group, y = rcg_abund)) +
   geom_boxplot(aes(fill = gender), 
@@ -122,7 +96,7 @@ probiotic %>%
   ggplot(aes(x=rcg_abund,
              fill=gender))+
   geom_histogram(alpha=0.6,
-                 bins=40)+
+                 bins=15)+
   facet_wrap(~group,
              ncol=1)
 
@@ -130,7 +104,7 @@ probiotic %>%
 summary(probiotic)
 # Is the value 913 an outlier?
 
-#Looking at variables
+#Looking at variables counts 
 probiotic %>% 
   group_by(gender) %>% 
   summarise(n = n())
@@ -150,6 +124,9 @@ probiotic_summary %>%
   kbl(caption="Summary statistics of gender and group compared with RCG abudance") %>% 
   kable_styling(bootstrap_options = "striped", full_width = T, position = "left")
 
+# Creating a summary of comparisons 
+GGally::ggpairs(probiotic_merged_2,
+                aes(colour = group))
 
 
 # Data Statistical analysis ----
