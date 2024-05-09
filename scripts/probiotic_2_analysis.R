@@ -16,6 +16,7 @@ library(kableExtra)
 library(GGally)
 library(emmeans)
 library(corrplot)
+library(lmtest)
 
 # Loading Data ----
 probiotic <- read_csv(here("data", "probiotic.csv"))
@@ -90,7 +91,14 @@ ggplot(data = probiotic_2, aes(x = group, y = difference)) +
   geom_jitter(aes(color = gender),
               width = 0.1, 
               alpha = 0.7, 
-              show.legend = FALSE)
+              show.legend = TRUE)
+
+ggplot(data = probiotic_2, aes(x = after_abund, y = before_abund)) +
+  geom_jitter(aes(color = group),
+              width = 0.1, 
+              alpha = 0.7, 
+              show.legend = TRUE)
+
 
 
 # Boxplot of rcg_bund Vs group Vs gender
@@ -181,8 +189,62 @@ model_2
 # Table of Coefficients
 summary(model_2)
 
-# Comparing means 
-model_3 <- lm(before_abund ~ after_abund, 
-              data=darwin)
+# Looking at residuals 
+par(mfrow = c(2, 2))
+plot(model_2)
 
+# Breusch Pagan test for normality
+lmtest::bptest(model_2)
+#  the p-value (0.1338) is greater than the typical significance 
+#level of 0.05, we fail to reject the null hypothesis. This suggests 
+#that there is not enough evidence to conclude that heteroscedasticity 
+#is present in the model at the 0.05 significance level.
+# Heteroscedasticity occurs when the variability of the errors (or residuals) 
+#in a regression model is not constant across all levels
 
+# qqplot with confidence intervals
+car::qqPlot(model_2)
+
+# shapiro wilk test for homoscedasticity
+shapiro.test(residuals(model_2))
+# The p-value (0.0102) is less than the typical significance level of 0.05, 
+#we reject the null hypothesis. This suggests that there is sufficient evidence 
+#to conclude that the residuals do not follow a normal distribution.
+# It measures the degree of departure from normality. For the Shapiro-Wilk test, 
+#the test statistic ranges from 0 to 1, where 1 indicates perfect normality and 
+#values closer to 0 indicate departure from normality. In your result, W = 0.87613.
+
+# Checking to see if residual is having an effect by creating a model without the data value
+model_3 <- lm(difference ~ gender + group,
+             data = probiotic_2[-14,])
+model_3
+
+# table of coefficients 
+summary(model_3)
+
+# Looking at residuals 
+par(mfrow = c(2, 2))
+plot(model_3)
+
+# Breusch Pagan test for normality
+lmtest::bptest(model_3)
+#  the p-value (0.1997) is greater than the typical significance 
+#level of 0.05, we fail to reject the null hypothesis. This suggests 
+#that there is not enough evidence to conclude that heteroscedasticity 
+#is present in the model at the 0.05 significance level.
+# Heteroscedasticity occurs when the variability of the errors (or residuals) 
+#in a regression model is not constant across all levels
+
+# qqplot with confidence intervals
+car::qqPlot(model_3)
+
+# shapiro wilk test for homoscedasticity
+shapiro.test(residuals(model_3))
+# The p-value (0.9737) is more than the typical significance level of 0.05, 
+#we accept the null hypothesis. This suggests that there is sufficient evidence 
+#to conclude that the residuals do follow a normal distribution.
+# It measures the degree of departure from normality. For the Shapiro-Wilk test, 
+#the test statistic ranges from 0 to 1, where 1 indicates perfect normality and 
+#values closer to 0 indicate departure from normality. In your result, W = 0.87613.
+
+# performance check model_3 
