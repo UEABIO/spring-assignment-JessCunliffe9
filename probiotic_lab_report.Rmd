@@ -4,28 +4,140 @@ author: "Jess Cunliffe"
 date: "May, 2024"
 output:
   pdf_document: default
+editor_options: 
+  markdown: 
+    wrap: sentence
 ---
 
-# Introduction
+```{r settings, include=FALSE}
+# GLOBAL KNITR OPTIONS ----
+knitr::opts_chunk$set(echo = FALSE,
+                      fig.align = "center",
+                      fig.width = 6,
+                      fig.asp = 0.8,
+                      out.width = "80%")
+```
 
-Provide a brief introduction to the experiment, including its purpose and objectives.
+```{r setup, include=FALSE}
+# PACKAGES ----
+library(tidyverse)
+library(janitor)
+library(rstatix)
+library(performance)
+library(here)
+library(tidyr)
+library(dplyr)
+library(kableExtra)
+library(GGally)
+library(emmeans)
+library(corrplot)
+library(lmtest)
+library(ggridges)
+library(rmarkdown)
+library(knitr)
+```
 
-# Materials and Methods
+```{r read data, include=FALSE}
+# READ DATA ----
 
-Describe the materials used in the experiment and the methodology followed in detail.
+source("scripts/probiotic_3_analysis.R")
 
-# Results
+```
 
-Present the results of the experiment. This may include tables, figures, and any relevant statistical analysis.
+## RMarkdown Notes
 
-# Discussion
+-   to initiate a new line, enter \*two spaces\*\* at the end of the previous line and then Enter/Return
 
-Interpret the results and discuss their significance. Address any discrepancies or unexpected findings.
+-   Underscores (*text*) or single asterisk (*text*) to italicise
 
-# Conclusion
+-   Double asterisks (**text**) for bold text
 
-Summarize the key findings of the experiment and their implications.
+-   
 
-# References
+    # First-level heading / Title
 
-List any references cited in the report using APA or any other citation style.
+-   
+
+    ## Second level heading
+
+-   
+
+    ### Third-level heading
+
+-   echo = FALSE to not print the chunk’s R source code in the output document
+
+-   warning = FALSE to not print warnings produced by the R code
+
+-   message = FALSE to not print any messages produced by the R code
+
+-   include = either TRUE/FALSE whether to include chunk outputs (e.g. plots) in the document
+
+-   out.width = and out.height = - size of ouput e.g. out.width = "75%"
+
+-   fig.align = "center" adjust how a figure is aligned across the page
+
+-   fig.show='hold' if your chunk prints multiple figures and you want them printed next to each other (pair with out.width = c("33%", "67%")
+
+## Introduction
+
+**150-200 words**
+
+\- Provide background information on the topic of the experiment.
+
+\- State the purpose and objectives of the experiment.
+
+\- Introduce relevant theories or concepts.
+
+## Analysis Methods
+
+**200-250 words**
+
+\- Describe the materials used in the experiment, including equipment and chemicals.
+
+\- Outline the methodology followed, including experimental procedures and data collection techniques.
+
+\- Mention any controls or variables manipulated during the experiment.
+
+```{r figure, echo = FALSE}
+
+
+
+
+```
+
+## Results and Discussion
+
+**700 - 800 words**
+
+\- Present the findings of the experiment in a clear and concise manner.
+
+\- Include tables, graphs, or figures as necessary to support the results.
+
+\- Describe any patterns or trends observed in the data.
+
+\- Interpret the results of the experiment and discuss their significance.
+
+\- Compare the findings to existing literature or theoretical expectations.
+
+\- Analyze any limitations or sources of error in the experiment.
+
+\- Propose possible explanations for unexpected results and suggest areas for further research.
+
+```{r, echo = FALSE}
+
+
+
+
+```
+
+## Conclusion
+
+**100 words**
+
+\- Summarize the key findings of the experiment.
+
+\- Reiterate the main conclusions drawn from the results.
+
+\- Discuss the broader implications of the findings and their relevance to the field of study.
+
+## References
