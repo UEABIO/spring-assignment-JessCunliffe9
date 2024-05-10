@@ -1,30 +1,31 @@
 ---
-title: "Probiotic Lab Report"
+title: "Lab Report Title"
 author: "Jess Cunliffe"
-date: "2024-04-23"
-output: pdf_document
+date: "May, 2024"
+output:
+  pdf_document: default
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+# Introduction
 
-## R Markdown
+Provide a brief introduction to the experiment, including its purpose and objectives.
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+# Materials and Methods
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Describe the materials used in the experiment and the methodology followed in detail.
 
-```{r cars}
-summary(cars)
-```
+# Results
 
-## Including Plots
+Present the results of the experiment. This may include tables, figures, and any relevant statistical analysis.
 
-You can also embed plots, for example:
+# Discussion
 
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
+Interpret the results and discuss their significance. Address any discrepancies or unexpected findings.
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+# Conclusion
+
+Summarize the key findings of the experiment and their implications.
+
+# References
+
+List any references cited in the report using APA or any other citation style.
