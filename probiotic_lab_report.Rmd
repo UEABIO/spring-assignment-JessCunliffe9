@@ -105,6 +105,8 @@ source("scripts/probiotic_3_analysis.R")
 
 ```
 
+{r figure 2, echo = FALSE}
+
 ## Results and Discussion
 
 **700 - 800 words**
