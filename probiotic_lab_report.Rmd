@@ -35,14 +35,18 @@ library(lmtest)
 library(ggridges)
 library(rmarkdown)
 library(knitr)
+library(patchwork)
 ```
 
 ```{r read data, include=FALSE}
 # READ DATA ----
 
+probiotic <- read_csv(here("data", "probiotic.csv"))
+
 source("scripts/probiotic_3_analysis.R")
 
 ```
+
 
 ## RMarkdown Notes
 
@@ -105,7 +109,6 @@ source("scripts/probiotic_3_analysis.R")
 
 ```
 
-{r figure 2, echo = FALSE}
 
 ## Results and Discussion
 
@@ -125,13 +128,61 @@ source("scripts/probiotic_3_analysis.R")
 
 \- Propose possible explanations for unexpected results and suggest areas for further research.
 
-```{r, echo = FALSE}
 
-
-
-
+```{r,echo =FALSE}
+(plot_1+plot_2)+
+  plot_layout(guides = "collect") 
 ```
 
+```{r,echo =FALSE}
+probiotic_3_participant_summary <- probiotic_3 %>% 
+  group_by(group, gender) %>% 
+  summarise(quantity = n())
+probiotic_3_participant_summary %>% 
+  kbl(caption="Table of Participant quantities within each Gender and Treatment Group") %>% 
+  kable_styling(bootstrap_options = "striped", full_width = T, position = "left")
+```
+
+```{r,echo =FALSE}
+probiotic_3_summary <- probiotic_3 %>% 
+  group_by(group,gender) %>% 
+  summarise(mean_difference_in_rcg_abund = mean(difference),
+            sd = sd(difference),
+            se = sd(difference) / sqrt(n()))
+probiotic_3_summary %>% 
+  kbl(caption="Summary statistics of gender and group compared with RCG abudance difference between before and after observations") %>% 
+  kable_styling(bootstrap_options = "striped", full_width = T, position = "left")
+```
+
+```{r,echo =FALSE}
+probiotic_3_summary_group <- probiotic_3 %>% 
+  group_by(group) %>% 
+  summarise(
+    mean_difference_in_rcg_abund = mean(difference),
+    sd = sd(difference),
+    se = sd(difference) / sqrt(n()))
+probiotic_3_summary_group %>% 
+  kbl(caption="Summary statistics of treatment group compared with RCG abudance difference between before and after observations") %>% 
+  kable_styling(bootstrap_options = "striped", full_width = T, position = "left")
+```
+
+```{r,echo =FALSE}
+probiotic_3_summary_gender <- probiotic_3 %>% 
+  group_by(gender) %>% 
+  summarise(mean_difference_in_rcg_abund = mean(difference),
+            sd = sd(difference),
+            se = sd(difference) / sqrt(n()))
+probiotic_3_summary_gender %>% 
+  kbl(caption="Summary statistics of gender compared with RCG abudance difference between before and after observations") %>% 
+  kable_styling(bootstrap_options = "striped", full_width = T, position = "left")
+```
+
+```{r, echo = FALSE}
+model_3_summary <- summary(model_3)
+model_3_summary <- tidy(model_3_summary)
+kable(model_3_summary, format = "html", digits = 2) %>%
+  kable_styling(bootstrap_options = "striped", full_width = FALSE)
+```
 ## Conclusion
 
 **100 words**
