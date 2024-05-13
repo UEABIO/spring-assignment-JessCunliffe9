@@ -1,12 +1,12 @@
 ---
-title: "Lab Report Title"
+title: "Assessing the Impact of L. rhamnosus Intervention on Rumicoccus gnavus Abundance in the Gut"
 author: "Jess Cunliffe"
 date: "May, 2024"
 output:
-  pdf_document: default
-editor_options: 
-  markdown: 
-    wrap: sentence
+  pdf_document: 
+    fig_caption: true 
+    fig_height: 5  
+    fig_width: 7 
 ---
 
 ```{r settings, include=FALSE}
@@ -46,7 +46,6 @@ probiotic <- read_csv(here("data", "probiotic.csv"))
 source("scripts/probiotic_3_analysis.R")
 
 ```
-
 
 ## RMarkdown Notes
 
@@ -109,7 +108,6 @@ source("scripts/probiotic_3_analysis.R")
 
 ```
 
-
 ## Results and Discussion
 
 **700 - 800 words**
@@ -127,7 +125,6 @@ source("scripts/probiotic_3_analysis.R")
 \- Analyze any limitations or sources of error in the experiment.
 
 \- Propose possible explanations for unexpected results and suggest areas for further research.
-
 
 ```{r,echo =FALSE}
 (plot_1+plot_2)+
@@ -183,6 +180,7 @@ model_3_summary <- tidy(model_3_summary)
 kable(model_3_summary, format = "html", digits = 2) %>%
   kable_styling(bootstrap_options = "striped", full_width = FALSE)
 ```
+
 ## Conclusion
 
 **100 words**
