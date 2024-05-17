@@ -21,6 +21,8 @@ library(ggridges)
 library(rmarkdown)
 library(knitr)
 library(patchwork)
+library(ggplot2)
+library(stringr)
 
 
 # Loading Data ----
@@ -28,7 +30,7 @@ probiotic <- read_csv(here("data", "probiotic.csv"))
 
 # Manipulating data ----
 
-probiotic_2 <- probiotic %>% 
+probiotic_3 <- probiotic %>% 
   group_by(subject) %>% 
   pivot_wider(names_from = "time", values_from = ruminococcus_gnavus_abund)%>% 
   select(-sample) %>% 
@@ -41,10 +43,10 @@ probiotic_2 <- probiotic %>%
   mutate(difference = after_abund - before_abund)
 
 # Removing the subject column as i feel it is not needed for analysis
-probiotic_2 <-   probiotic_2[, -which(names(probiotic_2) == "subject")]
+probiotic_3 <-   probiotic_3[, -which(names(probiotic_3) == "subject")]
 
 # Removing Outlier
-probiotic_3 <- probiotic_2[probiotic_2$before_abund <= 900, ]
+probiotic_3 <- probiotic_3[probiotic_3$before_abund <= 900, ]
 
 # Hypothesis ----
 #H1 = there is an reduction in abundance of the pathogenic bacterium Ruminococcus 
@@ -56,9 +58,12 @@ probiotic_3 <- probiotic_2[probiotic_2$before_abund <= 900, ]
 # Value creation ----
 # Setting universal colours for graphs
 colours <- c("deeppink3", "royalblue")
-
+annotation_text <- "A comparison line between the mean difference in Ruminococcus gnavus abundance of LGG and Placebo treatment"
+annotation_wrapped <- str_wrap(annotation_text, width = 120)  
+y_axis_wrapped <- str_wrap("The abundance difference of R. gnavus between before and after observations", width = 50)
 
 # Data Visualisation checks probiotc_3 ----
+
 # Histogram to look at new data set distribution across a three variables 
 probiotic_3 %>% 
   ggplot()+
@@ -80,7 +85,7 @@ probiotic_3 %>%
   ggplot(aes(x=difference,
              fill=gender))+
   geom_histogram(alpha=0.6,
-                 bins=15)+
+                 bins=10)+
   facet_wrap(~group,
              ncol=1)
 
@@ -105,31 +110,6 @@ ggplot(data = probiotic_3, aes(x = group, y = difference)) +
 GGally::ggpairs(probiotic_3,
                 aes(colour = group))
 
-# Looking at density across groups and genders 
-probiotic_3 %>% 
-  ggplot(aes(x = difference, y = group, fill = gender))+
-  geom_density_ridges(alpha = 0.5)+
-  scale_fill_manual(values = colours)+
-  theme_minimal()+
-  theme_light()
-# No male data for LGG???
-
-# Exploring the comparison of female and male reactions to LGG and Placebo 
-probiotic_3 %>% 
-  ggplot(aes(x=group, y = difference, group = gender, colour = gender))+
-  geom_point( alpha = 0.6)+
-  geom_smooth(method = "lm",
-              se = FALSE)+
-  scale_colour_manual(values = colours)+
-  theme_minimal()
-# Observations:
-# LGG males exhibit larger increase in abundance than placebo males
-# LGG males echibit an increase in abundance 
-# LGG females exhibit a decrease in abundance 
-# Placebo females exhibit small increase in abundance 
-# In females for both groups seem to have very little difference 
-# In males abundance seems to increase in both groups 
-
 # Data Analysis probiotic_3 ----
 
 # creating a summary of probiotic_3
@@ -144,57 +124,68 @@ probiotic_3 %>%
   group_by(group) %>% 
   summarise(n = n())
 
-probiotic_3 %>% 
+##### Table of Participant quantities
+probiotic_3_participant_summary <- probiotic_3 %>% 
   group_by(group, gender) %>% 
-  summarise(n = n())
+  summarise(quantity = n())
+probiotic_3_participant_summary %>% 
+  kbl(caption="Participant Information and Quantities", bold = TRUE) %>% 
+  kable_styling(bootstrap_options = "striped", full_width = T, position = "left")
 
-#Exploring means all variables as seen in figures 
+##### Table the average differences of both genders and each group showing either a positive or negative value from the original observation
 probiotic_3_summary <- probiotic_3 %>% 
   group_by(group,gender) %>% 
-  summarise(mean_difference_in_rcg_abund=mean(difference),
-            sd=sd(difference))
-probiotic_3_summary
+  summarise(mean_difference_in_rcg_abund = mean(difference),
+            sd = sd(difference),
+            se = sd(difference) / sqrt(n()))
+probiotic_3_summary %>% 
+  kbl(caption="Summary of Mean Difference in R. gnavus Abundance by Treatment Group and Gender") %>% 
+  kable_styling(bootstrap_options = "striped", full_width = T, position = "left")
 # negative effect in females, large increase in males 
 
+##### Table comparing the average differences between the two treatment groups
 probiotic_3_summary_group <- probiotic_3 %>% 
   group_by(group) %>% 
-  summarise(mean_difference_in_rcg_abund=mean(difference),
-            sd=sd(difference))
-probiotic_3_summary_group
+  summarise(
+    mean_difference_in_rcg_abund = mean(difference),
+    sd = sd(difference),
+    se = sd(difference) / sqrt(n()))
+probiotic_3_summary_group <- probiotic_3_summary_group %>% 
+  kbl(caption="Summary of Mean Difference in R. gnavus Abundance by Treatment Group") %>% 
+  kable_styling(bootstrap_options = "striped", full_width = T, position = "left")
 # a negative difference from LGG = 37.4 to Placebo = 34.9 (-2.5)
-# shows the very little difference in effect just between groups 
+# shows the very little difference in effect between treatment groups 
 
+##### Table comparing just genders and the mean differences of abundances between groups 
 probiotic_3_summary_gender <- probiotic_3 %>% 
   group_by(gender) %>% 
-  summarise(mean_difference_in_rcg_abund=mean(difference),
-            sd=sd(difference))
-probiotic_3_summary_gender
-# A positive difference from F = 6.07 to M = 110 (+104)
-
-# Making a neat table using Kable of each summary 
-probiotic_3_summary %>% 
-  kbl(caption="Summary statistics of gender and group compared with RCG abudance difference between before and after observations") %>% 
-  kable_styling(bootstrap_options = "striped", full_width = T, position = "left")
-
-probiotic_3_summary_group %>% 
-  kbl(caption="Summary statistics of treatment group compared with RCG abudance difference between before and after observations") %>% 
-  kable_styling(bootstrap_options = "striped", full_width = T, position = "left")
-
+  summarise(mean_difference_in_rcg_abund = mean(difference),
+            sd = sd(difference),
+            se = sd(difference) / sqrt(n()))
 probiotic_3_summary_gender %>% 
-  kbl(caption="Summary statistics of gender compared with RCG abudance difference between before and after observations") %>% 
+  kbl(caption="Summary of Mean Difference in R. gnavus Abundance by Gender") %>% 
   kable_styling(bootstrap_options = "striped", full_width = T, position = "left")
-
+# A positive difference from F = 6.07 to M = 110 (+104)
 # Data Statistical analysis probiotic_3 ----
+# creating linear model
 model_3 <- lm(difference ~ gender + group,
               data = probiotic_3)
-model_3
 
-# Linear model of coefficients
+##### Linear model of coefficients summary and Table 
 model_3_summary <- summary(model_3)
 model_3_summary <- tidy(model_3_summary)
-# Print the tidy summary table
 kable(model_3_summary, format = "html", digits = 2) %>%
   kable_styling(bootstrap_options = "striped", full_width = FALSE)
+#The intercept coefficient is 7.733, but it is not statistically significant (p = 0.800), 
+#This means that when both gender and group are at their reference levels (e.g., female and LGG group), 
+#the average value of difference is expected to be 7.733, but this value is not significantly different from zero.
+
+# The coefficient for genderM is 103.933, and it is statistically significant (p = 0.010).
+# This suggests that, holding other variables constant, males (genderM) have, on average, 
+#a difference value that is 103.933 units higher than females (genderF)
+
+# The coefficient for groupPlacebo is -2.500, but it is not statistically significant (p = 0.943).
+# This implies that there is no statistically significant difference in the difference values between the Placebo group and theLGG group
 
 # Looking at residuals 
 par(mfrow = c(2, 2))
@@ -232,17 +223,15 @@ performance::check_model(model_3, check="outliers")
 plot(model_3, which=c(4,4))
 # No problem with any outliers 
 
-# Model_3 summaries
+# Model_3 summaries using broom 
 broom::tidy(model_3) 
-
 broom::glance(model_3)
 
 #graph of the estimated mean difference with an approx 95% 
 GGally::ggcoef_model(model_3,
                      show_p_values=FALSE, 
                      conf.level=0.95)
-# How to interpret????
-# difference within males and placebo?? 
+#graph of the estimated mean difference with an approx 99% 
 GGally::ggcoef_model(model_3,
                      show_p_values=FALSE, 
                      conf.level=0.99)
@@ -272,7 +261,7 @@ probiotic_3b_means %>%
     ymin=lower.CL, 
     ymax=upper.CL))
 
-# Getting the F value
+# Getting the F value to test for interaction
 drop1(model_3, test = "F")
 
 # making a model 4 to look at data comparing just difference and group 
@@ -289,8 +278,8 @@ model_5
 summary(model_5)
 drop1(model_5, test = "F")
 
-
 # Data Visualisation Analysis probiotic_3 ----
+
 # Visual of the difference in mean abundance difference between groups 
 probiotic_3 %>% 
   ggplot(aes(x=group, 
@@ -321,34 +310,117 @@ probiotic_3 %>%
        y = "The abundance difference of rcg between before and after observations", 
        fill = "Treatment Group")
 
+# making a bar chart for the comparison of the averages of the before and after based on group
+mean_abundance_data <- probiotic_3 %>%
+  group_by(group) %>%
+  summarise(
+    mean_before = mean(before_abund),
+    se_before = sd(before_abund) / sqrt(n()),
+    mean_after = mean(after_abund),
+    se_after = sd(after_abund) / sqrt(n())) %>%
+  pivot_longer(cols = c(mean_before, mean_after, se_before, se_after), 
+               names_to = c("measure", "observation"), 
+               names_sep = "_", 
+               values_to = "value") %>%
+  pivot_wider(names_from = measure, values_from = value)
 
-# Graph/Table creation for report ----
+bar_1 <- ggplot(mean_abundance_data, aes(x = group, y = mean, fill = observation)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.75), width = 0.7) +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), 
+                position = position_dodge(width = 0.75), width = 0.25) +
+  geom_text(aes(label = round(mean, 2)), 
+            position = position_dodge(width = 0.75), 
+            vjust = 11.5, size = 3) +
+  labs(title = "Effect of Treatment on R. gnavus Abundance: Before vs. After", 
+       x = "Treatment Group",
+       y = "Mean Abundance of R. gnavus") +
+  scale_fill_discrete(name = "Sample Time Point", labels = c("Before", "After")) +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 10)) 
 
-# Define the annotation text
-annotation_text <- "A comparison line between the mean difference in Ruminococcus gnavus abundance of LGG and Placebo treatment"
-# Wrap the annotation text
-wrapped_text <- str_wrap(annotation_text, width = 30)  # Adjust the width as needed
+# making a bar chart for the comparison of the averages of the before and after based on gender: 
+mean_abundance_data_gender <- probiotic_3 %>%
+  group_by(gender) %>%
+  summarise(
+    mean_before = mean(before_abund),
+    se_before = sd(before_abund) / sqrt(n()),
+    mean_after = mean(after_abund),
+    se_after = sd(after_abund) / sqrt(n())) %>%
+  pivot_longer(cols = c(mean_before, mean_after, se_before, se_after), 
+               names_to = c("measure", "observation"), 
+               names_sep = "_", 
+               values_to = "value") %>%
+  pivot_wider(names_from = measure, values_from = value) %>% 
+  mutate(gender = recode(gender, 'M' = 'Male', 'F' = 'Female'))
 
-plot_1 <- probiotic_3 %>% 
-  ggplot(aes(x=group, y = difference, group = gender, colour = gender))+
-  geom_point(alpha = 0.8, size=2)+
-  theme(axis.text = element_text(size = 20))+
-  geom_smooth(method = "lm", se = FALSE)+
-  scale_colour_manual(values = colours)+
+bar_2 <- ggplot(mean_abundance_data_gender, aes(x = gender, y = mean, fill = observation)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.75), width = 0.7) +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), 
+                position = position_dodge(width = 0.75), width = 0.25) +
+  geom_text(aes(label = round(mean, 2)), 
+            position = position_dodge(width = 0.75), 
+            vjust = 8, size = 3) +
+  labs(title = "Gender Disparity in Mean R. gnavus Abundance: Before vs. After Intervention",
+       x = "Gender",
+       y = "Mean Abundance of R. gnavus") +
+  scale_fill_discrete(name = "Sample Time Point", labels = c("Before", "After")) +
   theme_minimal()+
-  geom_segment(aes(x=1, xend=2, y=37.43, yend=37.43-2.5), linetype="dashed",lwd = 0.5,colour="red")+
-  stat_summary(geom = "point",fun = mean,size = 3)+
-  scale_y_continuous(limits = c(-200, 200))+
+  theme(plot.title = element_text(size = 10)) 
+
+
+## making a bar chart for the comparison of the averages of the before and after based on group and gender: 
+mean_abundance_data_combined <- probiotic_3 %>%
+  group_by(group, gender) %>%
+  summarise(
+    mean_before = mean(before_abund),
+    se_before = sd(before_abund) / sqrt(n()),
+    mean_after = mean(after_abund),
+    se_after = sd(after_abund) / sqrt(n())) %>%
+  pivot_longer(cols = c(mean_before, mean_after, se_before, se_after), 
+               names_to = c("measure", "observation"), 
+               names_sep = "_", 
+               values_to = "value") %>%
+  pivot_wider(names_from = measure, values_from = value) %>% 
+  mutate(gender = recode(gender, 'M' = 'Male', 'F' = 'Female'))
+
+bar_3 <- ggplot(mean_abundance_data_combined, aes(x = group, y = mean, fill = observation)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.75), width = 0.7) +
+  geom_errorbar(aes(ymin = mean - se, ymax = mean + se), 
+                position = position_dodge(width = 0.75), width = 0.25) +
+  geom_text(aes(label = round(mean, 2)), 
+            position = position_dodge(width = 0.75), 
+            vjust = 9, size = 3) +
+  facet_wrap(~ gender) +
+  labs(title = "Gender-specific Impact of Treatment on R. gnavus Abundance: Before vs. After",
+       x = "Treatment Group",
+       y = "Mean Abundance of R. gnavus") +
+  scale_fill_discrete(name = "Sample Time Point", labels = c("Before", "After")) +
+  theme_minimal()+
+  theme(plot.title = element_text(size = 20)) 
+
+((bar_1 + bar_2)/ bar_3)
+
+# Point plot comparing the mean changes between genders between treatment groups with a comparison line of the average change of R. gnavus with no account of gender 
+plot_1 <- probiotic_3 %>% 
+  ggplot(aes(x = group, y = difference, group = gender, colour = gender))+
+  geom_point(alpha = 0.8, size = 2)+  
+  geom_smooth(method = "lm", se = FALSE)+
+  theme_minimal()+
+  theme(axis.text = element_text(size = 8),  
+        axis.title = element_text(size = 9.5), 
+        plot.title = element_text(size = 11),
+        legend.position = "none")+
+  scale_colour_manual(values = colours)+
+  geom_segment(aes(x = 1, xend = 2, y = 37.43, yend = 37.43 - 2.5), linetype = "dashed", lwd = 0.5, colour = "red")+
+  stat_summary(geom = "point", fun = mean, size = 3)+
+  scale_y_continuous(limits = c(-200, 200), name = y_axis_wrapped)+  
+  ggtitle(expression("The Abundance Differences of "* italic("Ruminococcus gnavus") *" Between Treatment Groups and Gender"))+
   labs(x = "Treatment Type", 
-       y = expression("The abundance difference of " * italic("R. gnavus") * " between before and after observations"), 
        color = "Gender of Subject") +
-  ggtitle(expression("The Mean Abundance Differences of "* italic("Ruminococcus gnavus") *" Between Treatment Groups and Gender"))+
   geom_hline(yintercept = 0, linetype = "dashed", color = "black")+
-  annotate("text", x = 2.3, y = 36, label = wrapped_text, color = "red", size = 3)+
-  theme(legend.position = "bottom", legend.direction = "horizontal", legend.text = element_text(size = 15))+
-  guides(color = guide_legend(override.aes = list(shape = 15, size=8)))
+  annotate("text", x = 1.5, y = 53, label = annotation_wrapped, color = "red", size = 3)+
+  guides(color = guide_legend(override.aes = list(shape = 16, size = 5)))
 plot_1
-  
 # LGG males exhibit larger increase in abundance than placebo males
 # LGG males exhibit an increase in abundance 
 # LGG females exhibit a decrease in abundance 
@@ -357,85 +429,24 @@ plot_1
 # In males abundance seems to increase in both groups 
 # The difference between the mean abundances of LGG and placebo is null 
 
+
 # Boxplot comparing gender and group and difference 
-plot_2<-probiotic_3 %>% 
-  ggplot(aes(x=group, 
-             y=difference))+
-  geom_boxplot(width=0.8, 
-               aes(fill=gender),alpha=0.8)+
-  scale_fill_manual(values = colours)+
+plot_2 <- probiotic_3 %>% 
+  ggplot(aes(x=group, y=difference))+
+  geom_boxplot(width=0.8, aes(fill=gender), alpha=0.8)+
   geom_jitter(shape = 1, width=0.1)+
-  theme_minimal()+
-  scale_y_continuous(limits = c(-200, 200))+
-  labs(x = "Treatment Type", 
-       y = NULL,
-       fill = NULL)+
-  #ggtitle(expression("The abundance differences of "* italic("Ruminococcus gnavus") *" between treatment groups and gender variances"))+
   geom_hline(yintercept = 0, linetype = "dashed", color = "black")+
-  theme(legend.position = "none")
+  scale_fill_manual(values = colours)+
+  theme_minimal()+
+  theme(axis.text = element_text(size = 8),  
+        axis.title = element_text(size = 10),
+        legend.position = "bottom",)+
+  scale_y_continuous(limits = c(-200, 200), name = y_axis_wrapped)+  
+  labs(x = "Treatment Type", 
+       fill = "Gender of Subject")
 plot_2
 
-#(1)# Creating a patchwork of the two graphs in report 
-(plot_1+plot_2)+
-  plot_layout(guides = "collect") 
 
-#(2)# Table of Participant quantities
-probiotic_3_participant_summary <- probiotic_3 %>% 
-  group_by(group, gender) %>% 
-  summarise(quantity = n())
-probiotic_3_participant_summary %>% 
-  kbl(caption="Table of Participant quantities within each Gender and Treatment Group") %>% 
-  kable_styling(bootstrap_options = "striped", full_width = T, position = "left")
-
-#(3)# Table the average differences of both genders and each group showing either a positive or negative value from the original observation
-probiotic_3_summary <- probiotic_3 %>% 
-  group_by(group,gender) %>% 
-  summarise(mean_difference_in_rcg_abund = mean(difference),
-            sd = sd(difference),
-            se = sd(difference) / sqrt(n()))
-probiotic_3_summary %>% 
-  kbl(caption="Summary statistics of gender and group compared with RCG abudance difference between before and after observations") %>% 
-  kable_styling(bootstrap_options = "striped", full_width = T, position = "left")
-# negative effect in females, large increase in males 
-
-#(4)# Table comparing the average differences between the two treatment groups
-probiotic_3_summary_group <- probiotic_3 %>% 
-  group_by(group) %>% 
-  summarise(
-    mean_difference_in_rcg_abund = mean(difference),
-    sd = sd(difference),
-    se = sd(difference) / sqrt(n()))
-probiotic_3_summary_group <- probiotic_3_summary_group %>% 
-  kbl(caption="Summary statistics of treatment group compared with RCG abudance difference between before and after observations") %>% 
-  kable_styling(bootstrap_options = "striped", full_width = T, position = "left")
-# a negative difference from LGG = 37.4 to Placebo = 34.9 (-2.5)
-# shows the very little difference in effect between treatment groups 
-
-#(5)# Table comparing just genders and the mean differences of abundances between groups 
-probiotic_3_summary_gender <- probiotic_3 %>% 
-  group_by(gender) %>% 
-  summarise(mean_difference_in_rcg_abund = mean(difference),
-            sd = sd(difference),
-            se = sd(difference) / sqrt(n()))
-probiotic_3_summary_gender %>% 
-  kbl(caption="Summary statistics of gender compared with RCG abudance difference between before and after observations") %>% 
-  kable_styling(bootstrap_options = "striped", full_width = T, position = "left")
-
-# A positive difference from F = 6.07 to M = 110 (+104)
-
-#(6)# Linear model of coefficients
-model_3_summary <- summary(model_3)
-model_3_summary <- tidy(model_3_summary)
-kable(model_3_summary, format = "html", digits = 2) %>%
-  kable_styling(bootstrap_options = "striped", full_width = FALSE)
-#The intercept coefficient is 7.733, but it is not statistically significant (p = 0.800), 
-#This means that when both gender and group are at their reference levels (e.g., female and LGG group), 
-#the average value of difference is expected to be 7.733, but this value is not significantly different from zero.
-
-# The coefficient for genderM is 103.933, and it is statistically significant (p = 0.010).
-# This suggests that, holding other variables constant, males (genderM) have, on average, 
-#a difference value that is 103.933 units higher than females (genderF)
-
-# The coefficient for groupPlacebo is -2.500, but it is not statistically significant (p = 0.943).
-# This implies that there is no statistically significant difference in the difference values between the Placebo group and theLGG group
+##### Creating a patchwork of the two graphs in report 
+(plot_1 / plot_2)
 

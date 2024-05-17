@@ -1,21 +1,14 @@
 ---
-title: "Assessing the Impact of L. rhamnosus Intervention on Rumicoccus gnavus Abundance in the Gut"
+title: "Assessing the Impact of *L. rhamnosus* Intervention on *Rumicoccus gnavus* Abundance in the Gut"
 author: "Jess Cunliffe"
 date: "May, 2024"
 output:
   pdf_document: 
-    fig_caption: true 
-    fig_height: 5  
-    fig_width: 7 
 ---
 
 ```{r settings, include=FALSE}
 # GLOBAL KNITR OPTIONS ----
-knitr::opts_chunk$set(echo = FALSE,
-                      fig.align = "center",
-                      fig.width = 6,
-                      fig.asp = 0.8,
-                      out.width = "80%")
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 ```
 
 ```{r setup, include=FALSE}
@@ -38,10 +31,8 @@ library(knitr)
 library(patchwork)
 ```
 
-```{r read data, include=FALSE}
+```{r read data, include=FALSE, eval=TRUE}
 # READ DATA ----
-
-probiotic <- read_csv(here("data", "probiotic.csv"))
 
 source("scripts/probiotic_3_analysis.R")
 
@@ -81,36 +72,17 @@ source("scripts/probiotic_3_analysis.R")
 
 -   fig.show='hold' if your chunk prints multiple figures and you want them printed next to each other (pair with out.width = c("33%", "67%")
 
+-   Changing text colour \textcolor{red}{red}
+
+-   
+
 ## Introduction
 
-**150-200 words**
-
-\- Provide background information on the topic of the experiment.
-
-\- State the purpose and objectives of the experiment.
-
-\- Introduce relevant theories or concepts.
 
 ## Analysis Methods
 
-**200-250 words**
-
-\- Describe the materials used in the experiment, including equipment and chemicals.
-
-\- Outline the methodology followed, including experimental procedures and data collection techniques.
-
-\- Mention any controls or variables manipulated during the experiment.
-
-```{r figure, echo = FALSE}
-
-
-
-
-```
 
 ## Results and Discussion
-
-**700 - 800 words**
 
 \- Present the findings of the experiment in a clear and concise manner.
 
@@ -126,21 +98,22 @@ source("scripts/probiotic_3_analysis.R")
 
 \- Propose possible explanations for unexpected results and suggest areas for further research.
 
-```{r,echo =FALSE}
-(plot_1+plot_2)+
-  plot_layout(guides = "collect") 
+```{r,echo =FALSE, eval=TRUE, fig.cap="Your Figure Caption", fig.align = "center", fig.width = 8, fig.height= 10, out.width = "87%"}
+
+(plot_1 / plot_2)
 ```
 
-```{r,echo =FALSE}
+```{r,echo =FALSE, eval=TRUE}
 probiotic_3_participant_summary <- probiotic_3 %>% 
   group_by(group, gender) %>% 
   summarise(quantity = n())
 probiotic_3_participant_summary %>% 
   kbl(caption="Table of Participant quantities within each Gender and Treatment Group") %>% 
   kable_styling(bootstrap_options = "striped", full_width = T, position = "left")
+
 ```
 
-```{r,echo =FALSE}
+```{r,echo =FALSE,eval=TRUE}
 probiotic_3_summary <- probiotic_3 %>% 
   group_by(group,gender) %>% 
   summarise(mean_difference_in_rcg_abund = mean(difference),
@@ -151,7 +124,7 @@ probiotic_3_summary %>%
   kable_styling(bootstrap_options = "striped", full_width = T, position = "left")
 ```
 
-```{r,echo =FALSE}
+```{r,echo =FALSE, eval=TRUE}
 probiotic_3_summary_group <- probiotic_3 %>% 
   group_by(group) %>% 
   summarise(
@@ -163,7 +136,7 @@ probiotic_3_summary_group %>%
   kable_styling(bootstrap_options = "striped", full_width = T, position = "left")
 ```
 
-```{r,echo =FALSE}
+```{r,echo =FALSE, eval=TRUE}
 probiotic_3_summary_gender <- probiotic_3 %>% 
   group_by(gender) %>% 
   summarise(mean_difference_in_rcg_abund = mean(difference),
@@ -174,11 +147,18 @@ probiotic_3_summary_gender %>%
   kable_styling(bootstrap_options = "striped", full_width = T, position = "left")
 ```
 
-```{r, echo = FALSE}
+```{r, echo = FALSE,eval=TRUE}
 model_3_summary <- summary(model_3)
 model_3_summary <- tidy(model_3_summary)
-kable(model_3_summary, format = "html", digits = 2) %>%
-  kable_styling(bootstrap_options = "striped", full_width = FALSE)
+model_3_summary %>% 
+kbl(caption="Linear Regresion Summary of Difference by Gender and Group", digits = 2) %>%
+  kable_styling(bootstrap_options = "striped", full_width = T)
+```
+
+```{r, echo = F ,eval=T, fig.align = "center", fig.width = 10.7, fig.height= 9.5, out.width = "83%"}  
+
+((bar_1 + bar_2)/ bar_3)
+
 ```
 
 ## Conclusion
