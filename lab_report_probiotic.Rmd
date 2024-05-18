@@ -1,0 +1,371 @@
+---
+title: "Assessing the Impact of *L. rhamnosus* Intervention on *Rumicoccus gnavus* Abundance in the Gut"
+author: "Jess Cunliffe"
+date: "May, 2024"
+output: pdf_document
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+# GLOBAL KNITR OPTIONS ----
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r loading packages}
+library(tidyverse)
+library(janitor)
+library(rstatix)
+library(performance)
+library(here)
+library(tidyr)
+library(dplyr)
+library(kableExtra)
+library(GGally)
+library(emmeans)
+library(corrplot)
+library(lmtest)
+library(ggridges)
+library(rmarkdown)
+library(knitr)
+library(patchwork)
+```
+
+```{r data reading, echo=FALSE, include=FALSE}
+source("scripts/probiotic_3_analysis.R")
+```
+
+## Introduction
+
+The human gut microbiome refers to the diverse community of
+microorganisms that inhabit the gastrointestinal tract (GI). The
+relationship between the gut microbiome and its host is multifaceted and
+dynamic, with certain interactions playing a crucial and beneficial role
+in digestion, nutrient metabolism, immune regulation, and protection
+against pathogens. However, imbalance or dysregulation of the gut
+microbiome has association with a wide range of health conditions,
+including gastrointestinal, immune-related, and metabolic disorders
+**(Kuziel and Rakoff-Nahoum, 2022)**. *Ruminococcus gnavus*, a
+gram-positive anaerobic bacterium, is a common constituent of the
+indigenous human gut microbiota. *R. gnavus* has been linked both
+positively and negatively to an array of GI conditions. It is proven
+that *R. gnavus* produces bacteriocins including *Ruminococcins*,
+antimicrobial peptides that combat harmful bacteria, potentially
+contributing to gut microbial balance. Conversely, dysbiosis of the gut
+microbiota and increased abundance of *R. gnavus* is frequently
+correlated with gut disorders, including inflammatory bowel disease
+(IBD), colorectal cancer (CRC), and irritable bowel syndrome (IBS),
+highlighting the pathogenic potential of this bacterium **(Emmanuelle
+Crost et al., 2023).**
+
+Another well-established gut bacterium is *Lactobacillus rhamnosus*
+Gorbach-Goldin (GG), which is recognised for its probiotic properties
+**(Papizadeh et al., 2016)**. The term ‘probiotics’ incorporates all
+non-pathogenic living microorganisms that when administered in adequate
+amounts, confer health benefits to the host **(Córdoba and Hotel,
+2001)**. *L. rhamnosus* GG achieves this host benefit with robust
+pili-appendages that endure challenging conditions enabling adherence to
+intestinal mucus glycoproteins and colonisation of the gut. *L.
+rhamnosus* GG is associated with reducing the risk of gestational
+diabetes mellitus, improving immune reactions following vaccines, and
+managing diarrhoea associated with cancer and antibiotic treatments.
+Additionally, *L. rhamnosus* GG inhibits the growth and adherence of
+various pathogenic bacteria and may help restore healthy gut microbiota
+in conditions like IBS **(Steele, 2022).** Although both bacteria have
+been extensively studied, there remains a considerable gap in research
+regarding their relationship and potential interaction. It is this
+study’s aim to examine whether the intervention treatment with *L.
+rhamnosus* GG can result in a decrease in the abundance of *R. gnavus*
+in human stool samples.
+
+## Analysis
+
+To study the potential interaction between *L. rhamnosus* GG and *R.
+gnavus*, a sample of 22 male and female subjects produced two stool
+samples at two-time points: a before and after sample. The subjects were
+treated with either *L. rhamnosus* GG probiotic supplementation or a
+placebo (denoted in the study by “group”). From the stool samples,
+high-through profiling data was obtained to analyse the composition and
+abundance of the bacterial genera in the intestines. The data was
+analysed using RStudio Pro 2023.12.1 and packages such as tidyverse
+**(Wickham et al, 2019)** ggplot2 **(Wickham, 2016)**, performance
+**(Ludecke et al, 2021)**, kableExtra **(Zhu, 2024)** and “rmarkdown”
+**(Allaire et al, 2020)** were used throughout. These packages allowed
+for efficient and professional cleaning, statistical analysis, graphical
+visualisation, and summary tables of the data to be produced.
+
+### Data Cleaning  
+  
+  
+Firstly, the data was manipulated by removing the columns: “subject” and
+“sample”, which were insignificant for exploring a relationship. The
+data underwent additional processing using pivot_wider to restructure it
+into a more informative format, displaying abundance values for both
+before and after observations for each subject. Then, a "difference"
+column was generated using the mutate function, representing the
+calculated values obtained by subtracting before abundance from after
+abundance. The headers of the remaining columns were then put in
+snake_case naming style for consistency.
+
+### Data Analysis 
+  
+  
+Utilising histograms and boxplots as visual aids, potential outliers
+were explored, revealing a before abundance value of *R. gnavus* of 913.
+This outlier was subsequently confirmed through a car::qqPlot analysis.
+However, to comprehensively grasp the impact of this outlier on the
+dataset, a model needed to be fitted.
+
+### Data Modelling 
+
+A least-squares linear model was used to investigate whether the
+difference in *R. gnavus* abundance is affected by group treatment and
+gender as categorical predictors. The model produced an insignificant
+*F*-statistic and an adjusted *R*-squared value of -0.03 which indicates
+that the model was a poor fit for the data. A Shapiro Wilk test
+**(Shapiro and Wilk, 1965)** revealed that the residuals did not follow
+a normal distribution (*W* = 0.88, *P* \< 0.05) and finally, a Cooks
+Distance Plot **(Cook, 2011)** concluded the outlier was causing skew on
+the data set. The outlier and its corresponding data points for the
+subject were removed to address this issue, and a new least-squares
+linear model was created which can be seen in **Table 1** (*F*(2,18)=
+4.14, *P* \< 0.05, *R\^2* = 0.32). The Breusch-Pagan test (**Breusch and
+Pagan, 1979)**, Shapiro-Wilk test and performance checks found
+homoscedasticity and normal residuals in the data, confirming a good
+fit. To explore gender as a potential interaction, an *F*-test was
+conducted, comparing models with and without the interaction term. The
+analysis revealed no significant interaction between the variables, yet
+the model significantly improved with the inclusion of ‘gender’ so was
+kept in for analysis. The final sample population was 21 participant and
+quantitative information is summarised in **Table 2.**
+  
+  
+```{r Table 1: Linear Model Summary , echo=FALSE}
+model_3_summary %>% 
+  kbl(digits = 2, caption = "Linear Model of R. gnavus Abundance Difference: Effects of Gender and Treatment Group") %>%
+  kable_styling(bootstrap_options = "striped", full_width = T, position = "left")
+
+```
+  
+  
+```{r Table 2: Participant Summary , echo=FALSE}
+
+probiotic_3_participant_summary <- probiotic_3 %>% 
+  group_by(group, gender) %>% 
+  summarise(quantity = n())
+probiotic_3_participant_summary %>% 
+  kbl(caption="Participant Information and Quantities", bold = TRUE) %>% 
+  kable_styling(bootstrap_options = "striped", full_width = T, position = "left")
+
+```
+
+## Results
+
+It was hypothesised that the abundance of *R.gnavus* in the gut is
+reduced when intervened with *L. rhamnosus* GG supplementation. To test
+this, a least squares linear model was used with treatment group and
+gender as explanatory variables and the change in abundance between pre-
+and post-treatment observations as the response variable. The results
+provide intriguing insights into the potential of probiotic
+supplementation and are summarised visually in both **Figure 1** and
+**Figure 2.**
+
+```{r Figure 1:Abundance Difference, echo=FALSE, fig.cap="Figure 1: Bar Chart containing raw data values of before and after abundance counts of R. gnavus. (Top Left) Both treatment groups result in an increase in abundance, LGG treatment resulting in an average increase of 37.43 ± 30.01 and the Placebo treatment resulting in an average increase of 34.93 ¬±24.49, showing very little effect of treatment group on abundance variance. (Top right) Shows a very small increase in R. gnavus abundance between before and after observation in Females but a large mean increase of 110 ¬± 27.60 in Males. (Bottom Graph) Combines all variables to show no effect of probiotic intervention in Females and an enhancing effect on R. gnavus abundance in Males.", fig.align = "center", fig.width = 10.7, fig.height= 9.5, out.width = "83%"}
+
+((bar_1 + bar_2)/ bar_3)
+```
+
+```{r Figure 2, echo=FALSE, fig.cap="Figure 2: Changes in R. gnavus Abundance Pre- and Post-Treatment by Group and Gender. Top Graph: This graph depicts the mean changes in R. gnavus abundance between each sample by gender and treatment group. Females treated with L. rhamnosus GG show an average decrease of -4.20 ± 18.64, while those given a placebo show an average increase of 11.20 ± 27.92. The red dashed line indicates the average difference in abundance for each treatment group without gender differentiation, highlighting a lack of overall treatment effect but revealing gender disparities, as indicated by the pink (Female) and blue (Male) lines diverging from the average. These lines link the genders between each treatment group and the gradient between Placebo and LGG shows the impact the probiotic has on R. gnavus abundance within the gender. Males treated with LGG show an average increase of 141.50 ± 16.5, whereas those given a placebo show an increase of 94.25 ± 40.13. This suggests that the probiotic treatment has a more significant impact on R. gnavus abundance in males than in females.Bottom Graph: This graph illustrates the data distribution and interquartile ranges for each gender within the treatment groups, providing additional context on variability and spread.", fig.align = "center", fig.width = 8, fig.height= 10, out.width = "87%"}
+
+(plot_1 / plot_2)
+
+```
+
+### *L. rhamnosus* GG Probiotic intervention impact on *R. gnavus* abundance   
+
+As seen in **Table 3**, the result show that on average, the abundance
+of *R. gnavus* increases by 34.93±24.49 in the Placebo group and
+contradictory to the hypothesis, an increase of 37.43±30.01 when treated
+with *L. rhamnosus* GG. The linear coefficient model in **Table 1**,
+provides an estimate of -2.50 for the Placebo group which is found to be
+an insignificant difference between treatment groups with a *P*-value of
+0.94. Therefore, there is insufficient evidence to conclude that the
+intervention of the *L. rhamnosus* GG has any effect on *R. gnavus*
+abundance.
+
+
+```{r Table 3: Summary of Group , echo=FALSE}
+
+probiotic_3_summary_group <- probiotic_3 %>% 
+  group_by(group) %>% 
+  summarise(mean_difference_in_rcg_abund = mean(difference),
+    sd = sd(difference),
+    se = sd(difference) / sqrt(n()))
+probiotic_3_summary_group %>% 
+  kbl(caption="Summary of Mean Difference in R. gnavus Abundance by Treatment Group") %>% 
+  kable_styling(bootstrap_options = "striped", full_width = T, position = "left")
+
+```
+
+### Gender impact on *R. gnavus* abundance 
+
+Interestingly, **Figures 1 and 2** and **Table 4** reveal an unexpected
+gender disparity between the two treatment groups. The linear model
+confirms this, showing a significant increase of 103.93 in *R. gnavus*
+abundance in males compared to females (p = 0.01). As seen in **Table
+5**, *R. gnavus* abundance shows minimal change with either treatment
+intervention or placebo in females, evidenced by a mean decrease of 4.20
+± 18.64 in the *L. rhamnosus* GG group. This decrease is not significant
+(*P* = 0.80), indicating that the probiotic does not significantly
+affect *R. gnavus* abundance in females. Conversely, males show a
+substantial increase in mean *R. gnavus* abundance in both treatment
+groups, which contradicts the hypothesis. Specifically, there is a mean
+increase of 141.50 ± 16.50 in the *L. rhamnosus* GG group and 94.25 ±
+40.13 in the placebo group. While the model indicates a significant
+gender effect on R. gnavus abundance, the Placebo variable is not
+significant (*P* = 0.94), suggesting no significant difference in *R.
+gnavus* abundance between the *L. rhamnosus* GG and placebo groups after
+accounting for gender differences.
+
+
+```{r Table 4: Summary of Gender , echo=FALSE}
+ 
+probiotic_3_summary_gender <- probiotic_3 %>% 
+  group_by(gender) %>% 
+  summarise(mean_difference_in_rcg_abund = mean(difference),
+            sd = sd(difference),
+            se = sd(difference) / sqrt(n()))
+probiotic_3_summary_gender %>% 
+  kbl(caption="Summary of Mean Difference in R. gnavus Abundance by Gender") %>% 
+  kable_styling(bootstrap_options = "striped", full_width = T, position = "left")
+
+```
+
+```{r Table 5: Summary of Group and Gender, echo=FALSE}
+
+probiotic_3_summary <- probiotic_3 %>% 
+  group_by(group,gender) %>% 
+  summarise(mean_difference_in_rcg_abund = mean(difference),
+            sd = sd(difference),
+            se = sd(difference) / sqrt(n()))
+probiotic_3_summary %>% 
+  kbl(caption="Summary of Mean Difference in R. gnavus Abundance by Treatment Group and Gender") %>% 
+  kable_styling(bootstrap_options = "striped", full_width = T, position = "left")
+
+```
+
+
+### Alternative Explanations 
+
+The unexpected gender-specific responses in *R. gnavus* abundance could
+be due to several factors. Baseline differences in gut microbiota,
+hormonal influences, and variations in diet and lifestyle between males
+and females may have contributed. It has been proved that women with
+higher oestrogen levels correlated with increased diversity, higher
+abundance of *Bacteroidetes* and fewer *Firmicutes*, while women with
+raised testosterone levels exhibit less *Ruminococcus* bacteria. Men on
+the other hand, with higher testosterone, are positively correlated with
+*Ruminococcus* and microbial diversity **(d’Afflitto et al., 2022).**
+Additionally, the probiotic strain's unique effects, immune system
+modulation, and the complex microbial interactions within the gut
+microbiota might have played a role the effectiveness of probiotic
+supplementation. This gender disparity highlights the need for
+gender-stratified analyses in microbiota research and the development of
+precision probiotics tailored to individual microbiota profiles.
+Advances in microbiome sequencing and bioinformatics can help design
+probiotics targeting specific microbial imbalances in males and females.
+
+### Limitations and Future Research 
+
+While this study provides valuable insights into the gender-specific
+effects of *L. rhamnosus* GG on *R. gnavus* abundance, it has
+limitations such as a small sample size, short follow-up, and lack of
+detailed metadata on diet, medication, and lifestyle. Future research
+should address these by conducting larger, longitudinal studies with
+detailed clinical phenotyping, multi-omics profiling, and species-level
+analysis, which could elucidate the precise effects of *L. rhamnosus* GG
+on *R. gnavus* and other gut microbes. Integrating microbiome data with
+clinical, dietary, and lifestyle information can enhance understanding
+of probiotic efficacy and personalised treatment responses.
+
+## Conclusion
+
+This study found no significant effect of *L. rhamnosus* GG on *R.
+gnavus* abundance in the gut. However, a significant gender disparity
+was observed: males exhibited a substantial increase in *R. gnavus*
+abundance regardless of treatment, while females showed minimal change.
+These findings suggest that gender-specific factors may influence gut
+microbiota responses to probiotic interventions. Further research with
+larger, more detailed studies is needed to understand these dynamics
+better.
+
+## Reference List
+
+Allaire J, Xie Y, Dervieux C, McPherson J, Luraschi J, Ushey K, Atkins
+A, Wickham H, Cheng J, Chang W, Iannone R (2024).\_rmarkdown: Dynamic
+Documents for R\_. R package version 2.26’
+<https://github.com/rstudio/rmarkdown>.
+
+Breusch, T S & Pagan, A R, 1979. "A Simple Test for Heteroscedasticity
+and Random Coefficient Variation," Econometrica, Econometric Society,
+vol. 47(5), pages 1287-1294, September.
+
+Cook, R.D. (2011). Cook’s Distance. In: Lovric, M. (eds) International
+Encyclopedia of Statistical Science. Springer, Berlin, Heidelberg.
+<https://doi.org/10.1007/978-3-642-04898-2_189>
+
+Córdoba, A. and Hotel, P. (2001). ‘Health and Nutritional Properties of
+Probiotics in Food including Powder Milk with Live Lactic Acid Bacteria
+Report of a Joint FAO/WHO Expert Consultation on Evaluation of Health
+and Nutritional Properties of Probiotics in Food Including Powder Milk
+with Live Lactic Acid Bacteria Food and Agriculture Organization of the
+United Nations World Health Organization Joint FAO/WHO Expert
+Consultation on Evaluation of Health and Nutritional Properties of
+Probiotics in Food Including Powder Milk with Live Lactic Acid
+Bacteria’. [online] Available at:
+<http://pc.ilele.hk/public/pdf/20190225/bd3689dfc2fd663bb36def1b672ce0a4.pdf>.
+
+Crost, E., Coletto, E., Bell, A. and Juge, N. (2023). ‘Ruminococcus
+gnavus: friend or foe for human health’. Fems Microbiology Reviews,
+[online] 47(2). <doi:https://doi.org/10.1093/femsre/fuad014>.
+
+d’Afflitto, M., Upadhyaya, A., Green, A. and Peiris, M. (2022).
+‘Association Between Sex Hormone Levels and Gut Microbiota Composition
+and Diversity—A Systematic Review’. Journal of Clinical
+Gastroenterology, 56(5), pp.384–392.
+<doi:https://doi.org/10.1097/mcg.0000000000001676>.
+
+H. Wickham. ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag
+New York, 2016. Kuziel, G.A. and Rakoff-Nahoum, S. (2022). ‘The gut
+microbiome’. Current Biology, 32(6), pp.R257–R264.
+<doi:https://doi.org/10.1016/j.cub.2022.02.023>.
+
+Lüdecke et al., (2021). performance: An R Package for Assessment,
+Comparison and Testing of Statistical Models. Journal of Open Source
+Software, 6(60), 3139. <https://doi.org/10.21105/joss.03139>
+
+Papizadeh, M., Nahrevanian, H., Rohani, M., Hosseini, S.N. and
+Shojaosadati, S.A. (2016). ‘Lactobacillus rhamnosus Gorbach-Goldin (GG):
+A Top Well-Researched Probiotic Strain’. Journal of Medical
+Bacteriology, [online] 5(5-6), pp.46–59. Available at:
+<https://jmb.tums.ac.ir/index.php/jmb/article/view/318>.
+
+SHAPIRO, S.S. & WILK, M.B., 1965. An analysis of variance test for
+normality (complete samples). Biometrika, 52(3–4), pp.591–611. Available
+at: <https://doi.org/10.1093/biomet/52.3-4.591>.
+
+Steele, C. (2022). ‘Lactobacillus rhamnosus GG: A review of clinical use
+and efficacy’. Nutr. Med. J., 1, 70-116.
+
+Wickham H, Averick M, Bryan J, Chang W, McGowan LD, François R,
+Grolemund G, Hayes A, Henry L, Hester J, Kuhn M, Pedersen TL, Miller E,
+Bache SM, Müller, K, Ooms J, Robinson D, Seidel DP, Spinu V, Takahashi
+K, Vaughan D, Wilke C, Woo, K, Yutani H (2019). “Welcome to the
+tidyverse.” *Journal of Open Source Software*, *4*(43), 1686.
+<doi:10.21105/joss.01686> <https://doi.org/10.21105/joss.01686>.
+
+Zhu H (2024). *kableExtra: Construct Complex Table with 'kable' and Pipe
+Syntax*. R package version 1.4.0,
+<https://github.com/haozhu233/kableExtra>,
+<http://haozhu233.github.io/kableExtra/>

@@ -174,7 +174,7 @@ model_3 <- lm(difference ~ gender + group,
 ##### Linear model of coefficients summary and Table 
 model_3_summary <- summary(model_3)
 model_3_summary <- tidy(model_3_summary)
-kable(model_3_summary, format = "html", digits = 2) %>%
+kable(model_3_summary, digits = 2, caption = "Linear Model of R. gnavus Abundance Difference: Effects of Gender and Treatment Group") %>%
   kable_styling(bootstrap_options = "striped", full_width = FALSE)
 #The intercept coefficient is 7.733, but it is not statistically significant (p = 0.800), 
 #This means that when both gender and group are at their reference levels (e.g., female and LGG group), 
@@ -334,7 +334,7 @@ bar_1 <- ggplot(mean_abundance_data, aes(x = group, y = mean, fill = observation
   labs(title = "Effect of Treatment on R. gnavus Abundance: Before vs. After", 
        x = "Treatment Group",
        y = "Mean Abundance of R. gnavus") +
-  scale_fill_discrete(name = "Sample Time Point", labels = c("Before", "After")) +
+  scale_fill_discrete(name = "Sample Time Point", labels=c("After","Before")) +
   theme_minimal() +
   theme(plot.title = element_text(size = 10)) 
 
@@ -363,7 +363,7 @@ bar_2 <- ggplot(mean_abundance_data_gender, aes(x = gender, y = mean, fill = obs
   labs(title = "Gender Disparity in Mean R. gnavus Abundance: Before vs. After Intervention",
        x = "Gender",
        y = "Mean Abundance of R. gnavus") +
-  scale_fill_discrete(name = "Sample Time Point", labels = c("Before", "After")) +
+  scale_fill_discrete(name = "Sample Time Point", labels=c("After","Before")) +
   theme_minimal()+
   theme(plot.title = element_text(size = 10)) 
 
@@ -394,7 +394,7 @@ bar_3 <- ggplot(mean_abundance_data_combined, aes(x = group, y = mean, fill = ob
   labs(title = "Gender-specific Impact of Treatment on R. gnavus Abundance: Before vs. After",
        x = "Treatment Group",
        y = "Mean Abundance of R. gnavus") +
-  scale_fill_discrete(name = "Sample Time Point", labels = c("Before", "After")) +
+  scale_fill_discrete(name = "Sample Time Point", labels=c("After","Before")) +
   theme_minimal()+
   theme(plot.title = element_text(size = 20)) 
 
